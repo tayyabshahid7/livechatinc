@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <script >
+    debugger
       const apiInstance = axios.create({
         baseURL: "https://826d-2400-adc5-13c-9000-b134-e62a-487b-1c0b.ngrok-free.app",
         headers: { "Content-Type": "application/json" }
@@ -112,6 +113,7 @@
             const payload = {
               code: data.code
             };
+            debugger
 
             apiInstance
                     .post("/auth", payload)
