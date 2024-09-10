@@ -14,7 +14,7 @@ const server_url = "https://826d-2400-adc5-13c-9000-b134-e62a-487b-1c0b.ngrok-fr
 // Client ID, Secret and RedirectURI from Developer Console app:
 // https://developers.livechatinc.com/console/apps/
 const client_id = "3e54ea8d51ebd91d4cee9d236bf61b40";
-const client_secret = "FAYQSlj0G1X3Oj1EbpMdiGyGrvXWE3j8";
+const client_secret = "pm0ncXOvSGurVZqjZgUhzNwbr0PczI9B";
 const redirect_uri = "http://localhost:63342/webinar-chatbot-demo/index.html";
 
 // Story ID from URL: https://app.chatbot.com/stories/5de66551341e2d000799a070
