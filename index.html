@@ -99,6 +99,7 @@
                   console.log(error);
                 });
       }
+    $(document).ready(function() {
 
       // Obtaining data about authorized user
       const instance = AccountsSDK.init({
@@ -117,7 +118,7 @@
 
             apiInstance
                     .post("/auth", payload)
-                    .then(function(response) {
+                    .then(function (response) {
                       console.log(response.data);
                       debugger
 
@@ -127,14 +128,14 @@
                       document.getElementById("livechat-authorization-done").style.display = "block";
                       document.querySelector(".authorization-done").innerHTML = "Your email address: " + data.entity_id;
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                       console.log(error);
                     });
 
           }
         }
       });
-
+    })
 
 
   </script>
