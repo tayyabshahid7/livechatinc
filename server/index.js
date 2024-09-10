@@ -9,7 +9,7 @@ import bodyParser from "body-parser";
 import axios from "axios";
 const app = express().use(bodyParser.json()); // creates http server
 const secret_key = "token"; // webhooks secret key
-const server_url = "https://5cde-2400-adc5-13c-9000-b134-e62a-487b-1c0b.ngrok-free.app" // url for webhooks
+const server_url = "https://826d-2400-adc5-13c-9000-b134-e62a-487b-1c0b.ngrok-free.app" // url for webhooks
 
 // Client ID, Secret and RedirectURI from Developer Console app:
 // https://developers.livechatinc.com/console/apps/
