@@ -13,8 +13,129 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- Sign in with LiveChat SDK-->
     <script src="https://cdn.livechatinc.com/accounts/accounts-sdk.min.js"></script>
+    <script type="module" src="app.js?v=2.0"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <link rel="stylesheet" href="styles.css" />
   </head>
+  <script >
+      const apiInstance = axios.create({
+        baseURL: "http://localhost:3000",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      // Selecting bot
+      function botSelect(data) {
+        const elems = document.querySelectorAll(".btn-select");
+        [].forEach.call(elems, function(el) {
+          el.classList.remove("lc-btn--primary");
+        });
+
+        const payload = {
+          botNumber: data
+        };
+
+        apiInstance
+                .post("/bot_select", payload)
+                .then(function(response) {
+                  console.log(response.data);
+                  document.getElementById(data).classList.add("lc-btn--primary");
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+      }
+
+
+      function botsCreate() {
+        const botName = document.getElementsByName("BotName")[0].value;
+        const payload = {
+          botName
+        };
+
+        apiInstance
+                .post("/bot_create", payload)
+                .then(function(response) {
+                  console.log(response.data);
+                  botList();
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+      }
+
+      // Getting list of bots
+      function botsList() {
+        const payload = {};
+        // ab25d2d84f98ac650cb346e8777ffd6c
+        apiInstance
+                .post("/bot_list", payload)
+                .then(function(response) {
+                  console.log(response.data);
+                  const bot_list = response.data;
+                  const listArray = bot_list;
+                  const list = document.querySelector(".bot-list");
+                  const listItems = listArray&& listArray.map(function(element) {
+                    return `
+          <li id='${element.id}' class='listItem' style="display: flex; margin-bottom: 10px;align-items: center;">
+              <img src="${element.avatar}" style="width: 48px; height: 48px; border-radius: 50%;"/>
+
+              <div style="display: flex; flex-direction: column; padding: 10px; width: 280px;">
+                  <strong>${element.name}</strong>
+                  <span>${element.id}</span>
+              </div>
+
+              <div>
+                  <button id='${element.id}' class="lc-btn lc-btn--compact btn-select" onclick="botSelect('${element.id}')">Select</button>
+                  <button class="lc-btn lc-btn--destructive lc-btn--compact" onclick="botRemove('${element.id}')">&times;</button>
+              </div>
+          </li>`;
+                  });
+
+                  list.innerHTML = listItems && listItems.join("");
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+      }
+
+      // Obtaining data about authorized user
+      const instance = AccountsSDK.init({
+        client_id: "3e54ea8d51ebd91d4cee9d236bf61b40",
+        response_type: "code",
+        onIdentityFetched: (error, data) => {
+          if (data) {
+            console.log(data);
+            console.log("User authorized!");
+            console.log("License number: " + data.license);
+            console.log(error);
+            const payload = {
+              code: data.code
+            };
+
+            apiInstance
+                    .post("/auth", payload)
+                    .then(function(response) {
+                      console.log(response.data);
+                      debugger
+
+                      botsList();
+                      document.getElementById("livechat-login-button").style.display = "none";
+                      document.querySelector(".authorization").innerHTML = "Authorized!";
+                      document.getElementById("livechat-authorization-done").style.display = "block";
+                      document.querySelector(".authorization-done").innerHTML = "Your email address: " + data.entity_id;
+                    })
+                    .catch(function(error) {
+                      console.log(error);
+                    });
+
+          }
+        }
+      });
+
+
+
+  </script>
 
   <body>
     <div class="grid-container">
@@ -23,11 +144,13 @@
           Use the button below to send the authorization code
         </div>
         <!-- Sign in with LiveChat Button -->
-        <a href="" onclick="instance.openPopup()">
-          <div id="livechat-login-button" class="livechat-login-button"></div>
-        </a>
+
         <div class="lc-divider" />
       </div>
+
+      <button id="livechat-login-button">
+        <div class="livechat-login-button">Login</div>
+      </button>
 
       <div class="livechat-authorization-done">
         <form id="livechat-authorization-done" style="display:none;">
@@ -45,7 +168,7 @@
         <button
           type="button"
           class="lc-btn lc-btn--primary"
-          onclick="botList()"
+          onclick="botsList()"
         >
           Get bot list
         </button>
@@ -72,7 +195,7 @@
         <button
           type="button"
           class="lc-btn lc-btn--primary"
-          onclick="botCreate()"
+          onclick="botsCreate()"
         >
           Create new bot
         </button>
@@ -80,23 +203,8 @@
       </div>
     </div>
 
-    <script>
-      // Obtaining data about authorized user
-      const instance = AccountsSDK.init({
-        client_id: "your_app_client_id",
-        response_type: "code",
-        onIdentityFetched: (error, data) => {
-          if (data) {
-            console.log(data);
-            console.log("User authorized!");
-            console.log("License number: " + data.license);
-            console.log(error);
-            authSend(data);
-          }
-        }
-      });
-    </script>
 
-    <script src="app.js"></script>
+
+
   </body>
 </html>

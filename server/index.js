@@ -1,31 +1,36 @@
-const cors = require("cors");
-var corsOptions = {
-  origin: 'your_configuration_page_url',
+import cors from "cors";
+
+let corsOptions = {
+  origin: '*',
 }
-const express = require("express");
-const bodyParser = require("body-parser");
-const axios = require("axios");
+
+import express from "express";
+import bodyParser from "body-parser";
+import axios from "axios";
 const app = express().use(bodyParser.json()); // creates http server
 const secret_key = "token"; // webhooks secret key
-const server_url = "your_server_url" // url for webhooks
+const server_url = "https://5cde-2400-adc5-13c-9000-b134-e62a-487b-1c0b.ngrok-free.app" // url for webhooks
 
 // Client ID, Secret and RedirectURI from Developer Console app:
 // https://developers.livechatinc.com/console/apps/
-const client_id = "your_app_client_id";
-const client_secret = "your_app_client_secret";
-const redirect_uri = "your_app_client_secret";
+const client_id = "3e54ea8d51ebd91d4cee9d236bf61b40";
+const client_secret = "FAYQSlj0G1X3Oj1EbpMdiGyGrvXWE3j8";
+const redirect_uri = "http://localhost:63342/webinar-chatbot-demo/index.html";
 
 // Story ID from URL: https://app.chatbot.com/stories/5de66551341e2d000799a070
-const storyId = "your__chatbot_story_id";
+const storyId = "66df61b8851ebb000742f1b2";
 
 // Client access token from: https://app.chatbot.com/settings/developers
 const cbToken =
-  "Bearer 5XXXXXXXXXXXX_your_chatbot_client_access_token";
+    "Bearer sRFmu57JyPVRGorUUvgoGuWZfdIoivJR";
 
 // Globals
 // TODO: Move to DB
 let accessToken;
 let refreshToken;
+let botNumber;
+let authCode;
+let cbResponse;
 
 // APIs client instances
 const accountsApi = axios.create({
@@ -33,7 +38,7 @@ const accountsApi = axios.create({
 });
 
 const restApi = axios.create({
-  baseURL: "https://api.livechatinc.com/v3.1"
+  baseURL: "https://api.livechatinc.com/v3.3"
 });
 
 const chatBotApi = axios.create({
@@ -55,11 +60,15 @@ app.post("/auth", async (req, res) => {
       code: authCode,
       client_id: client_id,
       client_secret: client_secret,
-      redirect_uri: redirect_uri
     };
 
     // post to LiveChat
-    const authExchange = await accountsApi.post("/token", authBody);
+    const authExchange = await axios.post("https://accounts.livechatinc.com/v2/token", authBody, {
+      // headers: {
+      //   'Authorization': `Bearer NDJjYzM2YzAtMTZmZi00OWFiLWI3OWMtYTE1MTJiYmY3N2FhOmRhbDpyNy1NZVp0V003RlBJUU5CMjZiMV9wbFdDWTg`,
+      //   'Content-Type': 'application/json'
+      // }
+    });
 
     console.log("Exchange code for access token and refresh token");
     console.log(authExchange);
@@ -82,12 +91,13 @@ app.post("/bot_list", async (req, res) => {
 
   try {
     const botsBody = {
-      all: false
+      all: true
     };
+
 
     // post to LiveChat
     const botsList = await restApi.post(
-      "/configuration/action/get_bot_agents",
+      "/configuration/action/list_bots",
       botsBody,
       {
         headers: {
@@ -97,10 +107,10 @@ app.post("/bot_list", async (req, res) => {
     );
 
     console.log("List of bots");
-    console.log(botsList.data.bot_agents);
-    console.log("Number of bots: " + botsList.data.bot_agents.length);
+    console.log(botsList.data);
+    console.log("Number of bots: " + botsList.data?.length);
     console.log("___");
-    return res.status(200).send(botsList.data.bot_agents);
+    return res.status(200).send(botsList?.data);
   } catch (e) {
     if (e.response.status == 401) {
       await authExchange();
@@ -138,7 +148,7 @@ app.post("/bot_create", async (req, res) => {
 
     // post to LiveChat
     const botCreate = await restApi.post(
-      "/configuration/action/create_bot_agent",
+      "/configuration/action/create_bot",
       botCreateBody,
       {
         headers: {
@@ -239,7 +249,7 @@ app.post("/", async (req, res) => {
         }
       );
       console.log(mesCB);
-      cbResponse = mesCB.data.result.fulfillment[0].message;
+      cbResponse = mesCB.data.result.resolvedQuery
       console.log("Chatbot response");
       console.log(cbResponse);
       console.log("___");
@@ -297,13 +307,12 @@ async function sendMessage(ChatID) {
     };
     console.log(accessToken);
     // post to LiveChat
-    const mesLC = await restApi.post("/agent/action/send_event", lcBody, {
+
+    const mesLC = await axios.post("https://api.livechatinc.com/v3.5/agent/action/send_event", lcBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "X-Author-Id": botNumber
       }
     });
-
     console.log("LiveChat response");
     console.log("Event ID: " + mesLC.data.event_id);
     console.log("___");
